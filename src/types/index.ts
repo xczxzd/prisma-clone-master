@@ -46,6 +46,27 @@ export interface IndicatorStatus {
   description: string;
 }
 
+export interface WilliamsRData {
+  value: number;
+  zone: 'OVERBOUGHT' | 'OVERSOLD' | 'NEUTRAL';
+  pattern: 'W' | 'M' | 'NEUTRAL';
+  signal: 'STRONG_BUY' | 'BUY' | 'NEUTRAL' | 'SELL' | 'STRONG_SELL';
+}
+
+export interface AIAnalysisResult {
+  pair: string;
+  analysis: string;
+  confluenceScore: number;
+  indicators: {
+    williamsR: WilliamsRData;
+    rsi: number;
+    macd: { value: number; signal: number; histogram: number };
+    adx: number;
+    trend: 'BULLISH' | 'BEARISH';
+  };
+  timestamp: string;
+}
+
 export interface FibonacciLevel {
   level: string;
   price: number;

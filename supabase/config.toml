@@ -1,0 +1,4 @@
+project_id = "ngprrciixshtsmsjotow"
+
+[functions.market-analysis]
+verify_jwt = false
