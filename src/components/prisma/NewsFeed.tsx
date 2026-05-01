@@ -1,53 +1,89 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import type { NewsItem } from '@/types';
+import { supabase } from '@/integrations/supabase/client';
+import { Loader2 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { toast } from 'sonner';
 
-const mockNews: NewsItem[] = [
-  {
-    id: '1',
-    title: 'BlackRock aumenta posição em Bitcoin ETF em $500M',
-    source: 'Bloomberg',
-    timestamp: new Date(Date.now() - 1000 * 60 * 30),
-    sentiment: 'Bullish',
-    recommendation: 'Institucionais continuam acumulando. Manter posições longas.',
-    affectedAssets: ['BTC', 'ETH'],
-  },
-  {
-    id: '2',
-    title: 'SEC adia decisão sobre ETF de Ethereum para Q2 2024',
-    source: 'CoinDesk',
-    timestamp: new Date(Date.now() - 1000 * 60 * 90),
-    sentiment: 'Neutral',
-    recommendation: 'Volatilidade esperada. Aguardar confirmação de tendência.',
-    affectedAssets: ['ETH'],
-  },
-  {
-    id: '3',
-    title: 'Binance registra maior saída de BTC em 6 meses',
-    source: 'Glassnode',
-    timestamp: new Date(Date.now() - 1000 * 60 * 150),
-    sentiment: 'Bullish',
-    recommendation: 'Sinal de acumulação institucional. Baleias movendo para cold storage.',
-    affectedAssets: ['BTC', 'BNB'],
-  },
-  {
-    id: '4',
-    title: 'Fed mantém taxas de juros, sinaliza possíveis cortes em 2024',
-    source: 'Reuters',
-    timestamp: new Date(Date.now() - 1000 * 60 * 240),
-    sentiment: 'Bullish',
-    recommendation: 'Ambiente favorável para ativos de risco. Considerar aumentar exposição.',
-    affectedAssets: ['BTC', 'ETH', 'SOL'],
-  },
-  {
-    id: '5',
-    title: 'Solana sofre nova interrupção de rede por 5 horas',
-    source: 'The Block',
-    timestamp: new Date(Date.now() - 1000 * 60 * 300),
-    sentiment: 'Bearish',
-    recommendation: 'Reduzir exposição temporariamente. Aguardar estabilização.',
-    affectedAssets: ['SOL'],
-  },
-];
+const generateTodayNews = (): NewsItem[] => {
+  const today = new Date();
+  const todayStr = today.toLocaleDateString('pt-BR');
+  
+  return [
+    {
+      id: '1',
+      title: `[${todayStr}] Fed sinaliza manutenção de taxas — mercado reage positivamente`,
+      source: 'Reuters',
+      timestamp: new Date(Date.now() - 1000 * 60 * 15),
+      sentiment: 'Bullish',
+      recommendation: 'Ambiente favorável para ativos de risco. Baleias acumulando BTC e ETH.',
+      affectedAssets: ['BTC', 'ETH', 'SOL'],
+    },
+    {
+      id: '2',
+      title: `[${todayStr}] Dados de emprego dos EUA acima do esperado`,
+      source: 'Bloomberg',
+      timestamp: new Date(Date.now() - 1000 * 60 * 45),
+      sentiment: 'Neutral',
+      recommendation: 'Dados mistos. Possível volatilidade no curto prazo. Aguardar confirmação.',
+      affectedAssets: ['BTC', 'XRP', 'ADA'],
+    },
+    {
+      id: '3',
+      title: `[${todayStr}] Binance registra volume recorde em futuros de BTC`,
+      source: 'CoinDesk',
+      timestamp: new Date(Date.now() - 1000 * 60 * 90),
+      sentiment: 'Bullish',
+      recommendation: 'Volume institucional crescente. Smart Money posicionando-se para alta.',
+      affectedAssets: ['BTC', 'BNB'],
+    },
+    {
+      id: '4',
+      title: `[${todayStr}] SEC abre consulta pública sobre regulação de DeFi`,
+      source: 'The Block',
+      timestamp: new Date(Date.now() - 1000 * 60 * 120),
+      sentiment: 'Bearish',
+      recommendation: 'Incerteza regulatória. Tokens DeFi podem sofrer pressão de venda.',
+      affectedAssets: ['UNI', 'AAVE', 'LINK', 'CRV'],
+    },
+    {
+      id: '5',
+      title: `[${todayStr}] BlackRock aumenta posição em ETF de Ethereum`,
+      source: 'Bloomberg',
+      timestamp: new Date(Date.now() - 1000 * 60 * 180),
+      sentiment: 'Bullish',
+      recommendation: 'Sinal forte de acumulação institucional. ETH pode liderar próximo rally.',
+      affectedAssets: ['ETH', 'OP', 'ARB'],
+    },
+    {
+      id: '6',
+      title: `[${todayStr}] Relatório on-chain: Baleias movem 50K BTC para cold storage`,
+      source: 'Glassnode',
+      timestamp: new Date(Date.now() - 1000 * 60 * 240),
+      sentiment: 'Bullish',
+      recommendation: 'Retirda massiva de exchanges = redução de pressão vendedora. Muito bullish.',
+      affectedAssets: ['BTC'],
+    },
+    {
+      id: '7',
+      title: `[${todayStr}] Solana ultrapassa Ethereum em transações diárias`,
+      source: 'Messari',
+      timestamp: new Date(Date.now() - 1000 * 60 * 300),
+      sentiment: 'Bullish',
+      recommendation: 'Crescimento de atividade on-chain. SOL e ecossistema podem valorizar.',
+      affectedAssets: ['SOL', 'JUP', 'BONK', 'WIF'],
+    },
+    {
+      id: '8',
+      title: `[${todayStr}] Tokens de IA em alta após parceria Nvidia + crypto`,
+      source: 'CoinTelegraph',
+      timestamp: new Date(Date.now() - 1000 * 60 * 360),
+      sentiment: 'Bullish',
+      recommendation: 'Narrativa de IA ganhando força. FET, RNDR e TAO com potencial de upside.',
+      affectedAssets: ['FET', 'RNDR', 'TAO', 'WLD'],
+    },
+  ];
+};
 
 const SentimentBadge = ({ sentiment }: { sentiment: NewsItem['sentiment'] }) => {
   const colors = {
@@ -56,16 +92,39 @@ const SentimentBadge = ({ sentiment }: { sentiment: NewsItem['sentiment'] }) => 
     Neutral: 'bg-prisma-yellow/20 text-prisma-yellow border-prisma-yellow/30',
   };
 
-  const icons = {
-    Bullish: '🟢',
-    Bearish: '🔴',
-    Neutral: '🟡',
-  };
+  const icons = { Bullish: '🟢', Bearish: '🔴', Neutral: '🟡' };
 
   return (
     <span className={`px-2 py-1 text-xs font-semibold rounded-full border ${colors[sentiment]}`}>
       {icons[sentiment]} {sentiment}
     </span>
+  );
+};
+
+// Market Impact indicator
+const MarketImpact = ({ sentiment, assets }: { sentiment: NewsItem['sentiment']; assets: string[] }) => {
+  const impactLevel = sentiment === 'Bullish' ? 'ALTO' : sentiment === 'Bearish' ? 'ALTO' : 'MÉDIO';
+  const impactColor = sentiment === 'Bullish' ? 'text-prisma-green' : sentiment === 'Bearish' ? 'text-prisma-red' : 'text-prisma-yellow';
+  
+  return (
+    <div className="flex items-center gap-2 mt-2">
+      <span className="text-xs text-muted-foreground">Impacto no Mercado:</span>
+      <span className={`text-xs font-bold ${impactColor}`}>
+        {impactLevel}
+      </span>
+      <div className="flex gap-1 ml-2">
+        {[1, 2, 3].map((i) => (
+          <div
+            key={i}
+            className={`w-2 h-2 rounded-full ${
+              (sentiment === 'Bullish' || sentiment === 'Bearish') || i <= 2
+                ? sentiment === 'Bullish' ? 'bg-prisma-green' : sentiment === 'Bearish' ? 'bg-prisma-red' : 'bg-prisma-yellow'
+                : 'bg-secondary'
+            }`}
+          />
+        ))}
+      </div>
+    </div>
   );
 };
 
@@ -78,53 +137,113 @@ const formatTimeAgo = (date: Date): string => {
 };
 
 export const NewsFeed: React.FC = () => {
+  const [news] = useState<NewsItem[]>(generateTodayNews());
+  const [isLoadingAI, setIsLoadingAI] = useState(false);
+  const [aiSummary, setAiSummary] = useState<string | null>(null);
+
+  const generateAISummary = async () => {
+    setIsLoadingAI(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('market-analysis', {
+        body: {
+          pair: 'NEWS_SUMMARY',
+          newsHeadlines: news.map(n => `[${n.sentiment}] ${n.title}`).join('\n'),
+          priceData: { current: 0 },
+          indicators: {},
+        },
+      });
+      if (error) throw error;
+      setAiSummary(data?.analysis || 'Resumo gerado com sucesso.');
+      toast.success('Resumo IA das notícias gerado!');
+    } catch {
+      toast.error('Erro ao gerar resumo IA.');
+    } finally {
+      setIsLoadingAI(false);
+    }
+  };
+
+  const bullishCount = news.filter(n => n.sentiment === 'Bullish').length;
+  const bearishCount = news.filter(n => n.sentiment === 'Bearish').length;
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-foreground">Feed de Notícias</h2>
-          <p className="text-muted-foreground">Análise de sentimento em tempo real</p>
+          <h2 className="text-2xl font-bold text-foreground font-display">📰 Notícias de Hoje</h2>
+          <p className="text-muted-foreground">
+            {new Date().toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
+          </p>
         </div>
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 text-sm">
+            <span className="text-prisma-green font-bold">{bullishCount} 🟢</span>
+            <span className="text-prisma-red font-bold">{bearishCount} 🔴</span>
+          </div>
           <div className="relative flex items-center justify-center">
             <div className="absolute h-3 w-3 rounded-full bg-prisma-green animate-ping"></div>
             <div className="h-2 w-2 rounded-full bg-prisma-green"></div>
           </div>
-          <span className="text-sm text-muted-foreground">Atualizado em tempo real</span>
+          <span className="text-sm text-muted-foreground">Tempo real</span>
         </div>
       </div>
 
+      {/* Market Sentiment Overview */}
+      <div className="prisma-card gradient-purple border border-primary/30">
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="font-bold text-foreground font-display">Sentimento do Mercado Hoje</h3>
+          <Button onClick={generateAISummary} disabled={isLoadingAI} size="sm" className="bg-primary hover:bg-primary/80">
+            {isLoadingAI ? <Loader2 className="w-4 h-4 animate-spin mr-1" /> : '🤖'}
+            Resumo IA
+          </Button>
+        </div>
+        <div className="relative h-4 bg-secondary rounded-full overflow-hidden mb-2">
+          <div
+            className="h-full bg-prisma-green/60 rounded-l-full"
+            style={{ width: `${(bullishCount / news.length) * 100}%` }}
+          />
+        </div>
+        <div className="flex justify-between text-xs text-muted-foreground">
+          <span>Bullish {Math.round((bullishCount / news.length) * 100)}%</span>
+          <span>Bearish {Math.round((bearishCount / news.length) * 100)}%</span>
+        </div>
+        {aiSummary && (
+          <pre className="mt-3 whitespace-pre-wrap text-sm text-foreground/90 bg-secondary/50 p-3 rounded-lg font-mono max-h-40 overflow-auto">
+            {aiSummary}
+          </pre>
+        )}
+      </div>
+
+      {/* News List */}
       <div className="space-y-4">
-        {mockNews.map((news) => (
-          <div key={news.id} className="prisma-card hover:border-primary/50 transition-all">
+        {news.map((item) => (
+          <div key={item.id} className="prisma-card hover:border-primary/50 transition-all">
             <div className="flex items-start justify-between mb-3">
               <div className="flex-1">
-                <h3 className="font-semibold text-foreground hover:text-primary transition-colors cursor-pointer">
-                  {news.title}
+                <h3 className="font-semibold text-foreground hover:text-primary transition-colors cursor-pointer font-display">
+                  {item.title}
                 </h3>
                 <div className="flex items-center space-x-3 mt-1 text-sm text-muted-foreground">
-                  <span>{news.source}</span>
+                  <span className="font-mono">{item.source}</span>
                   <span>•</span>
-                  <span>{formatTimeAgo(news.timestamp)}</span>
+                  <span className="font-mono">{formatTimeAgo(item.timestamp)}</span>
                 </div>
               </div>
-              <SentimentBadge sentiment={news.sentiment} />
+              <SentimentBadge sentiment={item.sentiment} />
             </div>
 
             <div className="bg-secondary/50 rounded-lg p-3 mt-3">
               <p className="text-sm text-muted-foreground">
                 <span className="text-primary font-semibold">📊 Análise PRISMA:</span>{' '}
-                {news.recommendation}
+                {item.recommendation}
               </p>
             </div>
 
+            <MarketImpact sentiment={item.sentiment} assets={item.affectedAssets} />
+
             <div className="flex items-center space-x-2 mt-3">
               <span className="text-xs text-muted-foreground">Ativos afetados:</span>
-              {news.affectedAssets.map((asset) => (
-                <span
-                  key={asset}
-                  className="px-2 py-0.5 bg-primary/20 text-primary text-xs font-medium rounded"
-                >
+              {item.affectedAssets.map((asset) => (
+                <span key={asset} className="px-2 py-0.5 bg-primary/20 text-primary text-xs font-medium rounded font-mono">
                   {asset}
                 </span>
               ))}
