@@ -57,7 +57,6 @@ export default {
           border: "hsl(var(--sidebar-border))",
           ring: "hsl(var(--sidebar-ring))",
         },
-        // PRISMA Custom Colors
         prisma: {
           dark: {
             DEFAULT: "hsl(var(--prisma-dark))",
@@ -109,8 +108,9 @@ export default {
         "pulse-glow": "pulse-glow 2s ease-in-out infinite",
       },
       fontFamily: {
-        sans: ["Inter", "system-ui", "sans-serif"],
+        display: ["Space Grotesk", "sans-serif"],
         mono: ["JetBrains Mono", "Fira Code", "monospace"],
+        sans: ["Space Grotesk", "system-ui", "sans-serif"],
       },
     },
   },
