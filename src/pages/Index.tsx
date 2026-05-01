@@ -17,7 +17,7 @@ import {
   Community,
 } from '@/components/prisma';
 import { AnalysisModal } from '@/components/prisma/AnalysisModal';
-import bgCircuit from '/images/bg-circuit.jpg';
+const bgCircuit = '/images/bg-circuit.jpg';
 
 const Index: React.FC = () => {
   const [currentView, setCurrentView] = useState<View>('Dashboard');
