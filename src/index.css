@@ -2,92 +2,96 @@
 @tailwind components;
 @tailwind utilities;
 
-/* PRISMA IA Design System - Cyberpunk Trading Terminal */
+/* PRISMA IA Design System - Cyberpunk Neon Motherboard */
 
 @layer base {
   :root {
-    /* Dark backgrounds with blue undertones */
-    --background: 222 47% 6%;
-    --foreground: 210 40% 98%;
+    /* Purple neon motherboard palette */
+    --background: 260 25% 6%;
+    --foreground: 270 20% 95%;
 
-    --card: 222 47% 8%;
-    --card-foreground: 210 40% 98%;
+    --card: 260 22% 10%;
+    --card-foreground: 270 20% 95%;
 
-    --popover: 222 47% 8%;
-    --popover-foreground: 210 40% 98%;
+    --popover: 260 22% 10%;
+    --popover-foreground: 270 20% 95%;
 
-    /* Purple neon accent */
-    --primary: 271 91% 65%;
-    --primary-foreground: 210 40% 98%;
+    /* ROXO NEON VIOLETA */
+    --primary: 280 85% 60%;
+    --primary-foreground: 270 20% 95%;
 
-    --secondary: 222 47% 14%;
-    --secondary-foreground: 210 40% 98%;
+    --secondary: 260 22% 14%;
+    --secondary-foreground: 270 20% 95%;
 
-    --muted: 222 47% 12%;
-    --muted-foreground: 215 20% 65%;
+    --muted: 260 22% 12%;
+    --muted-foreground: 270 15% 60%;
 
-    --accent: 271 91% 65%;
-    --accent-foreground: 210 40% 98%;
+    --accent: 280 85% 60%;
+    --accent-foreground: 270 20% 95%;
 
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 0 72% 55%;
+    --destructive-foreground: 270 20% 95%;
 
-    --border: 222 47% 18%;
-    --input: 222 47% 14%;
-    --ring: 271 91% 65%;
+    --border: 260 20% 20%;
+    --input: 260 22% 14%;
+    --ring: 280 85% 60%;
 
     --radius: 0.75rem;
 
     /* PRISMA Custom Colors */
-    --prisma-dark: 222 47% 6%;
-    --prisma-dark-200: 222 47% 10%;
-    --prisma-dark-300: 222 47% 16%;
-    --prisma-purple: 271 91% 65%;
-    --prisma-purple-light: 271 91% 80%;
-    --prisma-green: 142 71% 45%;
-    --prisma-red: 0 84% 60%;
-    --prisma-yellow: 45 93% 58%;
-    --prisma-blue: 217 91% 60%;
+    --prisma-dark: 260 25% 6%;
+    --prisma-dark-200: 260 22% 10%;
+    --prisma-dark-300: 260 20% 16%;
+    --prisma-purple: 280 85% 60%;
+    --prisma-purple-light: 280 85% 80%;
+    --prisma-green: 145 70% 45%;
+    --prisma-red: 0 72% 55%;
+    --prisma-yellow: 45 90% 55%;
+    --prisma-blue: 260 60% 55%;
 
     /* Sidebar */
-    --sidebar-background: 222 47% 8%;
-    --sidebar-foreground: 210 40% 98%;
-    --sidebar-primary: 271 91% 65%;
-    --sidebar-primary-foreground: 210 40% 98%;
-    --sidebar-accent: 222 47% 14%;
-    --sidebar-accent-foreground: 210 40% 98%;
-    --sidebar-border: 222 47% 16%;
-    --sidebar-ring: 271 91% 65%;
+    --sidebar-background: 260 22% 8%;
+    --sidebar-foreground: 270 20% 95%;
+    --sidebar-primary: 280 85% 60%;
+    --sidebar-primary-foreground: 270 20% 95%;
+    --sidebar-accent: 260 22% 14%;
+    --sidebar-accent-foreground: 270 20% 95%;
+    --sidebar-border: 260 20% 16%;
+    --sidebar-ring: 280 85% 60%;
+
+    /* Fonts */
+    --font-display: 'Space Grotesk', sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
   }
 
   .dark {
-    --background: 222 47% 4%;
-    --foreground: 210 40% 98%;
-    --card: 222 47% 6%;
-    --card-foreground: 210 40% 98%;
-    --popover: 222 47% 6%;
-    --popover-foreground: 210 40% 98%;
-    --primary: 271 91% 65%;
-    --primary-foreground: 210 40% 98%;
-    --secondary: 222 47% 12%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 222 47% 10%;
-    --muted-foreground: 215 20% 65%;
-    --accent: 222 47% 14%;
-    --accent-foreground: 210 40% 98%;
-    --destructive: 0 62% 30%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 222 47% 14%;
-    --input: 222 47% 12%;
-    --ring: 271 91% 65%;
-    --sidebar-background: 222 47% 6%;
-    --sidebar-foreground: 210 40% 98%;
-    --sidebar-primary: 271 91% 65%;
-    --sidebar-primary-foreground: 210 40% 98%;
-    --sidebar-accent: 222 47% 12%;
-    --sidebar-accent-foreground: 210 40% 98%;
-    --sidebar-border: 222 47% 14%;
-    --sidebar-ring: 271 91% 65%;
+    --background: 260 25% 4%;
+    --foreground: 270 20% 95%;
+    --card: 260 22% 8%;
+    --card-foreground: 270 20% 95%;
+    --popover: 260 22% 8%;
+    --popover-foreground: 270 20% 95%;
+    --primary: 280 85% 60%;
+    --primary-foreground: 270 20% 95%;
+    --secondary: 260 22% 12%;
+    --secondary-foreground: 270 20% 95%;
+    --muted: 260 22% 10%;
+    --muted-foreground: 270 15% 60%;
+    --accent: 260 22% 14%;
+    --accent-foreground: 270 20% 95%;
+    --destructive: 0 72% 45%;
+    --destructive-foreground: 270 20% 95%;
+    --border: 260 20% 14%;
+    --input: 260 22% 12%;
+    --ring: 280 85% 60%;
+    --sidebar-background: 260 22% 6%;
+    --sidebar-foreground: 270 20% 95%;
+    --sidebar-primary: 280 85% 60%;
+    --sidebar-primary-foreground: 270 20% 95%;
+    --sidebar-accent: 260 22% 12%;
+    --sidebar-accent-foreground: 270 20% 95%;
+    --sidebar-border: 260 20% 14%;
+    --sidebar-ring: 280 85% 60%;
   }
 }
 
@@ -98,15 +102,40 @@
 
   body {
     @apply bg-background text-foreground antialiased;
-    font-family: 'Inter', system-ui, sans-serif;
+    font-family: var(--font-display);
   }
 }
 
 @layer utilities {
+  /* Text gradient */
+  .text-gradient {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-primary to-purple-300;
+  }
+
+  /* Glass effect */
+  .glass {
+    background: hsl(var(--card) / 0.8);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid hsl(var(--border) / 0.5);
+  }
+
   /* Glow effects */
+  .glow-primary {
+    box-shadow: 0 0 30px hsl(280 85% 60% / 0.4);
+  }
+
+  .glow-success {
+    box-shadow: 0 0 20px hsl(145 70% 45% / 0.4);
+  }
+
+  .glow-destructive {
+    box-shadow: 0 0 20px hsl(0 72% 55% / 0.4);
+  }
+
   .glow-purple {
-    box-shadow: 0 0 20px hsl(var(--prisma-purple) / 0.3),
-                0 0 40px hsl(var(--prisma-purple) / 0.2);
+    box-shadow: 0 0 20px hsl(280 85% 60% / 0.3),
+                0 0 40px hsl(280 85% 60% / 0.2);
   }
 
   .glow-green {
@@ -117,9 +146,17 @@
     box-shadow: 0 0 15px hsl(var(--prisma-red) / 0.4);
   }
 
+  /* Neon text glow */
+  .neon-text {
+    text-shadow: 0 0 5px hsl(280 85% 60%),
+                 0 0 10px hsl(280 85% 60%),
+                 0 0 20px hsl(280 85% 60%),
+                 0 0 40px hsl(280 85% 60%);
+  }
+
   /* Gradient backgrounds */
   .gradient-purple {
-    background: linear-gradient(135deg, hsl(var(--prisma-purple) / 0.2), transparent);
+    background: linear-gradient(135deg, hsl(280 85% 60% / 0.2), transparent);
   }
 
   .gradient-card {
@@ -129,16 +166,35 @@
   /* Animations */
   @keyframes pulse-glow {
     0%, 100% {
-      box-shadow: 0 0 10px hsl(var(--prisma-purple) / 0.5);
+      box-shadow: 0 0 10px hsl(280 85% 60% / 0.5);
     }
     50% {
-      box-shadow: 0 0 20px hsl(var(--prisma-purple) / 0.8),
-                  0 0 30px hsl(var(--prisma-purple) / 0.4);
+      box-shadow: 0 0 20px hsl(280 85% 60% / 0.8),
+                  0 0 30px hsl(280 85% 60% / 0.4);
     }
   }
 
   .animate-pulse-glow {
     animation: pulse-glow 2s ease-in-out infinite;
+  }
+
+  @keyframes pulse-ring {
+    0% {
+      transform: scale(0.95);
+      box-shadow: 0 0 0 0 hsl(280 85% 60% / 0.5);
+    }
+    70% {
+      transform: scale(1);
+      box-shadow: 0 0 0 10px hsl(280 85% 60% / 0);
+    }
+    100% {
+      transform: scale(0.95);
+      box-shadow: 0 0 0 0 hsl(280 85% 60% / 0);
+    }
+  }
+
+  .pulse-ring {
+    animation: pulse-ring 2s ease-in-out infinite;
   }
 
   @keyframes scan-line {
@@ -150,8 +206,25 @@
     }
   }
 
+  .scan-line {
+    animation: scan-line 3s linear infinite;
+  }
+
   .animate-scan {
     animation: scan-line 3s linear infinite;
+  }
+
+  @keyframes float {
+    0%, 100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-6px);
+    }
+  }
+
+  .float {
+    animation: float 6s ease-in-out infinite;
   }
 
   /* Scrollbar styling */
@@ -170,18 +243,18 @@
   }
 
   .scrollbar-thin::-webkit-scrollbar-thumb:hover {
-    background: hsl(var(--prisma-purple) / 0.5);
+    background: hsl(280 85% 60% / 0.5);
   }
 }
 
 /* Custom component styles */
 @layer components {
   .prisma-card {
-    @apply bg-card rounded-lg border border-border p-4 transition-all duration-300;
+    @apply glass rounded-lg p-4 transition-all duration-300;
   }
 
   .prisma-card:hover {
-    @apply border-primary/50;
+    border-color: hsl(280 85% 60% / 0.5);
   }
 
   .prisma-button {
