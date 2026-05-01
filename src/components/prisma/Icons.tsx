@@ -92,13 +92,37 @@ export const TargetIcon = (props: React.SVGProps<SVGSVGElement>) => (
   </svg>
 );
 
+// PRISMA Logo - Triangular Prism refracting light
 export const PrismaLogo = (props: React.SVGProps<SVGSVGElement>) => (
-  <svg {...props} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-    <path strokeLinecap="round" strokeLinejoin="round" d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25z" />
-    <path strokeLinecap="round" strokeLinejoin="round" d="M12 12a2.25 2.25 0 100-4.5 2.25 2.25 0 000 4.5z" />
-    <path strokeLinecap="round" strokeLinejoin="round" d="M12 12L7.75 16.25" />
-    <path strokeLinecap="round" strokeLinejoin="round" d="M12 12v-6" />
-    <path strokeLinecap="round" strokeLinejoin="round" d="M12 12l4.25 4.25" />
+  <svg {...props} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+    <defs>
+      <linearGradient id="prismaGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stopColor="hsl(280 85% 60%)" />
+        <stop offset="50%" stopColor="hsl(280 85% 70%)" />
+        <stop offset="100%" stopColor="hsl(300 80% 65%)" />
+      </linearGradient>
+      <filter id="prismaGlow">
+        <feGaussianBlur stdDeviation="3" result="blur" />
+        <feMerge>
+          <feMergeNode in="blur" />
+          <feMergeNode in="SourceGraphic" />
+        </feMerge>
+      </filter>
+    </defs>
+    {/* Glow behind */}
+    <polygon points="32,6 8,54 56,54" fill="url(#prismaGrad)" opacity="0.3" filter="url(#prismaGlow)" />
+    {/* Main triangle */}
+    <polygon points="32,6 8,54 56,54" fill="none" stroke="url(#prismaGrad)" strokeWidth="2.5" strokeLinejoin="round" />
+    {/* Inner refraction lines */}
+    <line x1="32" y1="6" x2="24" y2="38" stroke="hsl(280 85% 70%)" strokeWidth="1" opacity="0.6" />
+    <line x1="32" y1="6" x2="40" y2="38" stroke="hsl(300 80% 65%)" strokeWidth="1" opacity="0.6" />
+    {/* Light rays coming out */}
+    <line x1="24" y1="38" x2="10" y2="42" stroke="hsl(145 70% 45%)" strokeWidth="1.5" opacity="0.7" />
+    <line x1="28" y1="38" x2="16" y2="46" stroke="hsl(45 90% 55%)" strokeWidth="1.5" opacity="0.7" />
+    <line x1="36" y1="38" x2="48" y2="46" stroke="hsl(0 72% 55%)" strokeWidth="1.5" opacity="0.7" />
+    <line x1="40" y1="38" x2="54" y2="42" stroke="hsl(280 85% 60%)" strokeWidth="1.5" opacity="0.7" />
+    {/* Center dot */}
+    <circle cx="32" cy="30" r="2" fill="url(#prismaGrad)" />
   </svg>
 );
 
@@ -135,5 +159,17 @@ export const HeartIcon = (props: React.SVGProps<SVGSVGElement>) => (
 export const ChatIcon = (props: React.SVGProps<SVGSVGElement>) => (
   <svg {...props} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
     <path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+  </svg>
+);
+
+export const MaximizeIcon = (props: React.SVGProps<SVGSVGElement>) => (
+  <svg {...props} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
+  </svg>
+);
+
+export const MinimizeIcon = (props: React.SVGProps<SVGSVGElement>) => (
+  <svg {...props} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M9 9V4.5M9 9H4.5M9 9L3.75 3.75M9 15v4.5M9 15H4.5M9 15l-5.25 5.25M15 9h4.5M15 9V4.5M15 9l5.25-5.25M15 15h4.5M15 15v4.5m0-4.5l5.25 5.25" />
   </svg>
 );
