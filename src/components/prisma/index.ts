@@ -11,3 +11,5 @@ export { SignalHistory } from './SignalHistory';
 export { StrategyV3 } from './StrategyV3';
 export { RiskManagement } from './RiskManagement';
 export { Community } from './Community';
+export { TradingViewChart } from './TradingViewChart';
+export { AnalysisModal } from './AnalysisModal';
