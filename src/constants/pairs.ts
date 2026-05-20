@@ -56,7 +56,7 @@ export const PAIRS: Pair[] = [
   { id: 'SANDUSDT', name: 'SAND/USDT', group: 'Metaverso e Jogos' },
   { id: 'MANAUSDT', name: 'MANA/USDT', group: 'Metaverso e Jogos' },
   { id: 'IMXUSDT', name: 'IMX/USDT', group: 'Metaverso e Jogos' },
-  { id: 'GABORUSDT', name: 'GALA/USDT', group: 'Metaverso e Jogos' },
+  { id: 'GALAUSDT', name: 'GALA/USDT', group: 'Metaverso e Jogos' },
   { id: 'PIXELUSDT', name: 'PIXEL/USDT', group: 'Metaverso e Jogos' },
 
   // Meme Coins

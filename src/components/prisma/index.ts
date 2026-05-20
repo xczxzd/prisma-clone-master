@@ -13,3 +13,4 @@ export { RiskManagement } from './RiskManagement';
 export { Community } from './Community';
 export { TradingViewChart } from './TradingViewChart';
 export { AnalysisModal } from './AnalysisModal';
+export { AlertsPanel } from './AlertsPanel';

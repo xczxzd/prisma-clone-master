@@ -16,7 +16,7 @@ import {
   CogIcon,
   PrismaLogo,
 } from './Icons';
-import { Brain } from 'lucide-react';
+import { Brain, Bell } from 'lucide-react';
 
 interface SidebarProps {
   currentView: View;
@@ -60,6 +60,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       {/* Navigation */}
       <nav className="p-4 space-y-2 border-b border-border/50">
         <NavLink Icon={HomeIcon} label="Dashboard" isActive={currentView === 'Dashboard'} onClick={() => setCurrentView('Dashboard')} />
+        <NavLink Icon={Bell} label="🔔 Alertas & Execução" isActive={currentView === 'Alerts'} onClick={() => setCurrentView('Alerts')} />
         <NavLink Icon={UserGroupIcon} label="Comunidade" isActive={currentView === 'Community'} onClick={() => setCurrentView('Community')} />
         <NavLink Icon={ChartBarIcon} label="Análise Técnica" isActive={currentView === 'TechnicalAnalysis'} onClick={() => setCurrentView('TechnicalAnalysis')} />
         <NavLink Icon={TrendingUpIcon} label="Projeção de Preços" isActive={currentView === 'PriceProjection'} onClick={() => setCurrentView('PriceProjection')} />

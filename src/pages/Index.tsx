@@ -15,6 +15,7 @@ import {
   StrategyV3,
   RiskManagement,
   Community,
+  AlertsPanel,
 } from '@/components/prisma';
 import { AnalysisModal } from '@/components/prisma/AnalysisModal';
 const bgCircuit = '/images/bg-circuit.jpg';
@@ -27,7 +28,7 @@ const Index: React.FC = () => {
 
   const handleSelectPair = (pair: Pair) => {
     setSelectedPair(pair);
-    if (['Dashboard', 'Community', 'EconomicCalendar', 'NewsFeed', 'TelegramSettings', 'SignalHistory', 'StrategyV3', 'RiskManagement'].includes(currentView)) {
+    if (['Dashboard', 'Community', 'EconomicCalendar', 'NewsFeed', 'TelegramSettings', 'SignalHistory', 'StrategyV3', 'RiskManagement', 'Alerts'].includes(currentView)) {
       setCurrentView('TechnicalAnalysis');
     }
   };
@@ -61,6 +62,8 @@ const Index: React.FC = () => {
         return <StrategyV3 />;
       case 'RiskManagement':
         return <RiskManagement />;
+      case 'Alerts':
+        return <AlertsPanel />;
       default:
         return <Dashboard setSelectedPair={handleSelectPair} />;
     }
