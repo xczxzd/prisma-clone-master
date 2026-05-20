@@ -81,6 +81,14 @@ export const NewsFeed: React.FC = () => {
   const [news] = useState<NewsItem[]>(generateTodayNews());
   const [isLoadingAI, setIsLoadingAI] = useState(false);
   const [aiSummary, setAiSummary] = useState<string | null>(null);
+  const [filter, setFilter] = useState<'all' | 'Bullish' | 'Bearish' | 'Neutral'>('all');
+  const [assetFilter, setAssetFilter] = useState<string>('');
+
+  const filteredNews = useMemo(() => news.filter(n => {
+    if (filter !== 'all' && n.sentiment !== filter) return false;
+    if (assetFilter && !n.affectedAssets.some(a => a.toLowerCase().includes(assetFilter.toLowerCase()))) return false;
+    return true;
+  }), [news, filter, assetFilter]);
 
   const generateAISummary = async () => {
     setIsLoadingAI(true);
