@@ -162,9 +162,35 @@ export const NewsFeed: React.FC = () => {
         )}
       </div>
 
+      {/* Filtros */}
+      <div className="prisma-card flex flex-wrap items-center gap-3">
+        <Filter className="w-4 h-4 text-primary" />
+        <div className="flex gap-1">
+          {(['all', 'Bullish', 'Bearish', 'Neutral'] as const).map(f => (
+            <button
+              key={f}
+              onClick={() => setFilter(f)}
+              className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
+                filter === f ? 'bg-primary text-primary-foreground' : 'bg-secondary text-muted-foreground hover:bg-secondary/80'
+              }`}
+            >
+              {f === 'all' ? 'Todas' : f}
+            </button>
+          ))}
+        </div>
+        <input
+          type="text"
+          placeholder="Filtrar por ativo (BTC, ETH...)"
+          value={assetFilter}
+          onChange={e => setAssetFilter(e.target.value)}
+          className="prisma-input flex-1 min-w-[160px] py-1 text-sm"
+        />
+        <span className="text-xs text-muted-foreground font-mono">{filteredNews.length}/{news.length}</span>
+      </div>
+
       {/* News List */}
       <div className="space-y-4">
-        {news.map((item) => (
+        {filteredNews.map((item) => (
           <div key={item.id} className="prisma-card hover:border-primary/50 transition-all">
             <div className="flex items-start justify-between mb-3">
               <div className="flex-1">
