@@ -234,36 +234,97 @@ export const TechnicalAnalysis: React.FC<TechnicalAnalysisProps> = ({ pair, onAn
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
           <h2 className="text-2xl font-bold text-foreground font-display">{pair.name}</h2>
-          <p className="text-muted-foreground">Análise SMC + Williams %R + Gráfico em Tempo Real</p>
+          <p className="text-muted-foreground">SMC + Williams %R + Volume Profile · Preços reais Binance</p>
         </div>
         <div className="flex items-center gap-2">
-          <span className="px-3 py-1 bg-primary/20 text-primary rounded-full text-sm font-medium font-mono">
-            Binance Futures
-          </span>
+          <span className="px-3 py-1 bg-primary/20 text-primary rounded-full text-sm font-medium font-mono">Binance Live</span>
           {onAnalyze && (
             <Button onClick={() => onAnalyze(pair)} variant="outline" className="border-primary/30 text-primary hover:bg-primary/10">
-              <Brain className="w-4 h-4 mr-2" />
-              Análise Completa
+              <Brain className="w-4 h-4 mr-2" /> Análise Completa
             </Button>
           )}
           <Button onClick={runAIAnalysis} disabled={isAnalyzing} className="bg-primary hover:bg-primary/80">
-            {isAnalyzing ? (
-              <>
-                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                Analisando...
-              </>
-            ) : (
-              <>
-                <Brain className="w-4 h-4 mr-2" />
-                Análise IA
-              </>
-            )}
+            {isAnalyzing ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Analisando...</> : <><Brain className="w-4 h-4 mr-2" /> Análise IA</>}
           </Button>
         </div>
       </div>
+
+      {/* Card de preço real ao vivo */}
+      <div className="prisma-card gradient-purple border-2 border-primary/30">
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+          <div>
+            <p className="text-xs text-muted-foreground">💹 Preço Atual (Binance)</p>
+            <p className="text-2xl font-mono font-bold text-foreground">
+              ${ticker ? formatPriceString(pair.id, ticker.lastPrice) : '...'}
+            </p>
+          </div>
+          <div>
+            <p className="text-xs text-muted-foreground">Variação 24h</p>
+            <p className={`text-2xl font-mono font-bold ${(ticker?.priceChangePercent ?? 0) >= 0 ? 'text-prisma-green' : 'text-prisma-red'}`}>
+              {ticker ? `${ticker.priceChangePercent >= 0 ? '+' : ''}${ticker.priceChangePercent.toFixed(2)}%` : '...'}
+            </p>
+          </div>
+          <div>
+            <p className="text-xs text-muted-foreground">Máx 24h</p>
+            <p className="font-mono text-prisma-green">${ticker ? formatPriceString(pair.id, ticker.highPrice) : '...'}</p>
+          </div>
+          <div>
+            <p className="text-xs text-muted-foreground">Mín 24h</p>
+            <p className="font-mono text-prisma-red">${ticker ? formatPriceString(pair.id, ticker.lowPrice) : '...'}</p>
+          </div>
+          <div>
+            <p className="text-xs text-muted-foreground flex items-center gap-1"><Activity className="w-3 h-3" /> Volume 24h</p>
+            <p className="font-mono text-primary font-bold">${ticker ? (ticker.quoteVolume / 1_000_000).toFixed(2) + 'M' : '...'}</p>
+            <p className="text-[10px] text-muted-foreground">{ticker?.count.toLocaleString()} trades</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Volume Profile (POC / VAH / VAL) */}
+      {market?.volumeProfile && (
+        <div className="prisma-card border border-primary/30">
+          <h3 className="font-bold text-foreground mb-3 flex items-center gap-2">
+            📊 Volume Profile (zonas de baleias)
+          </h3>
+          <div className="grid grid-cols-3 gap-3 mb-3">
+            <div className="text-center p-2 bg-prisma-yellow/10 rounded-lg border border-prisma-yellow/30">
+              <p className="text-xs text-muted-foreground">POC (Point of Control)</p>
+              <p className="font-mono font-bold text-prisma-yellow">${formatPriceString(pair.id, market.volumeProfile.poc)}</p>
+              <p className="text-[10px] text-muted-foreground">Maior volume = zona magnética</p>
+            </div>
+            <div className="text-center p-2 bg-prisma-green/10 rounded-lg border border-prisma-green/30">
+              <p className="text-xs text-muted-foreground">VAH (Value Area High)</p>
+              <p className="font-mono font-bold text-prisma-green">${formatPriceString(pair.id, market.volumeProfile.vah)}</p>
+              <p className="text-[10px] text-muted-foreground">Topo da zona de valor</p>
+            </div>
+            <div className="text-center p-2 bg-prisma-red/10 rounded-lg border border-prisma-red/30">
+              <p className="text-xs text-muted-foreground">VAL (Value Area Low)</p>
+              <p className="font-mono font-bold text-prisma-red">${formatPriceString(pair.id, market.volumeProfile.val)}</p>
+              <p className="text-[10px] text-muted-foreground">Base da zona de valor</p>
+            </div>
+          </div>
+          {/* Histograma horizontal */}
+          <div className="space-y-0.5">
+            {[...market.volumeProfile.levels].reverse().slice(0, 12).map((lvl, i) => {
+              const maxVol = Math.max(...market.volumeProfile.levels.map(l => l.volume));
+              const pct = (lvl.volume / maxVol) * 100;
+              const isPOC = Math.abs(lvl.price - market.volumeProfile.poc) < 0.0001;
+              return (
+                <div key={i} className="flex items-center gap-2 text-xs">
+                  <span className="font-mono text-muted-foreground w-20 text-right">${formatPriceString(pair.id, lvl.price)}</span>
+                  <div className="flex-1 bg-secondary/40 rounded h-3 overflow-hidden">
+                    <div className={`h-full ${isPOC ? 'bg-prisma-yellow' : 'bg-primary/60'}`} style={{ width: `${pct}%` }} />
+                  </div>
+                  <span className="font-mono text-muted-foreground w-16">${(lvl.volume / 1000).toFixed(0)}k</span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       {/* TradingView Chart */}
       <TradingViewChart pair={pair} />
