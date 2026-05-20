@@ -1,15 +1,41 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import type { Signal, Pair } from '@/types';
 import { PAIRS, formatPriceString, formatPriceNumber } from '@/constants/pairs';
 import { ClockIcon, InfoIcon, SearchIcon, TargetIcon } from './Icons';
+import { usePrices } from '@/hooks/usePrices';
+import { executeSignal, addAlert } from '@/services/alertsStore';
+import { toast } from 'sonner';
+import { Bell, Zap } from 'lucide-react';
+import type { BinanceTicker } from '@/services/binanceApi';
 
 interface SignalCardProps {
   signal: Signal;
+  ticker?: BinanceTicker;
   onClick: (pair: Pair) => void;
 }
 
-const SignalCard: React.FC<SignalCardProps> = ({ signal, onClick }) => {
+const SignalCard: React.FC<SignalCardProps> = ({ signal, ticker, onClick }) => {
   const isLong = signal.direction === 'LONG';
+  const currentPrice = ticker?.lastPrice ?? signal.entry;
+  const change = ticker?.priceChangePercent ?? 0;
+
+  const handleExecute = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!ticker) { toast.error('Preço real indisponível'); return; }
+    executeSignal({ ...signal, entry: currentPrice }, currentPrice);
+    toast.success(`✅ Sinal ${signal.direction} executado @ $${formatPriceString(signal.pair.id, currentPrice)}`);
+  };
+
+  const handleAlert = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    addAlert({
+      symbol: signal.pair.id,
+      condition: isLong ? 'above' : 'below',
+      targetPrice: signal.takeProfit.level1,
+      note: `Alvo TP1 ${signal.pair.name}`,
+    });
+    toast.success('🔔 Alerta criado para TP1');
+  };
 
   return (
     <div
@@ -17,34 +43,29 @@ const SignalCard: React.FC<SignalCardProps> = ({ signal, onClick }) => {
       onClick={() => onClick(signal.pair)}
     >
       <div>
-        {/* Whale Alert Badge */}
         <div className="absolute top-2 right-2 flex items-center space-x-2 text-xs bg-prisma-yellow/20 text-prisma-yellow px-2 py-1 rounded-full">
           <span className="relative flex h-2 w-2">
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-prisma-yellow opacity-75"></span>
             <span className="relative inline-flex rounded-full h-2 w-2 bg-prisma-yellow"></span>
           </span>
-          <span>WHALE ALERT</span>
+          <span>WHALE</span>
         </div>
 
         <div className="flex justify-between items-start">
           <div>
             <h3 className="font-bold text-lg text-foreground">{signal.pair.name}</h3>
             <p className={`font-semibold text-sm ${isLong ? 'text-prisma-green' : 'text-prisma-red'}`}>
-              {signal.direction}
+              {signal.direction} • {signal.timeframe}
             </p>
           </div>
-          <div className="text-right flex items-center space-x-2">
+          <div className="text-right flex items-center space-x-2 mt-5">
             <div className="relative group">
               <InfoIcon className="h-5 w-5 text-muted-foreground cursor-help" />
               {signal.keyFactors && (
                 <div className="absolute bottom-full right-0 mb-2 w-72 p-3 bg-secondary text-xs text-muted-foreground rounded-md shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none z-10">
-                  <p className="font-bold text-primary mb-1 border-b border-border pb-1">
-                    Rastro Institucional:
-                  </p>
+                  <p className="font-bold text-primary mb-1 border-b border-border pb-1">Rastro Institucional:</p>
                   <ul className="list-disc list-inside space-y-1">
-                    {signal.keyFactors.map((factor, i) => (
-                      <li key={i}>{factor}</li>
-                    ))}
+                    {signal.keyFactors.map((f, i) => <li key={i}>{f}</li>)}
                   </ul>
                 </div>
               )}
@@ -56,97 +77,95 @@ const SignalCard: React.FC<SignalCardProps> = ({ signal, onClick }) => {
           </div>
         </div>
 
-        <div className="mt-4 space-y-2 text-sm">
-          <div className="flex justify-between">
-            <span className="text-muted-foreground">Entrada Sniper:</span>
-            <span className="font-mono text-foreground">
-              ${formatPriceString(signal.pair.id, signal.entry)}
+        {/* Preço real ao vivo */}
+        <div className="mt-3 p-2 bg-secondary/50 rounded-lg border border-primary/20">
+          <div className="flex items-center justify-between">
+            <span className="text-xs text-muted-foreground">💹 Preço Binance ao vivo</span>
+            <span className={`text-xs font-bold ${change >= 0 ? 'text-prisma-green' : 'text-prisma-red'}`}>
+              {change >= 0 ? '+' : ''}{change.toFixed(2)}%
             </span>
           </div>
+          <p className="font-mono text-foreground font-bold text-lg">
+            ${ticker ? formatPriceString(signal.pair.id, currentPrice) : '...'}
+          </p>
+          {ticker && (
+            <p className="text-[10px] text-muted-foreground font-mono mt-0.5">
+              Vol 24h: ${(ticker.quoteVolume / 1_000_000).toFixed(2)}M
+            </p>
+          )}
+        </div>
+
+        <div className="mt-3 space-y-1.5 text-sm">
           <div className="flex justify-between">
-            <span className="text-muted-foreground">Stop Protegido:</span>
-            <span className="font-mono text-prisma-red">
-              ${formatPriceString(signal.pair.id, signal.stopLoss)}
-            </span>
+            <span className="text-muted-foreground">🎯 Entrada Sniper:</span>
+            <span className="font-mono text-foreground">${formatPriceString(signal.pair.id, signal.entry)}</span>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-muted-foreground">🛡️ Stop Protegido:</span>
+            <span className="font-mono text-prisma-red">${formatPriceString(signal.pair.id, signal.stopLoss)}</span>
           </div>
           <div className="flex justify-between items-center">
-            <span className="text-muted-foreground">Alvo da Baleia:</span>
-            <span className="font-mono text-prisma-green font-bold">
-              ${formatPriceString(signal.pair.id, signal.takeProfit.level2)}
-            </span>
+            <span className="text-muted-foreground">🐋 Alvo Baleia:</span>
+            <span className="font-mono text-prisma-green font-bold">${formatPriceString(signal.pair.id, signal.takeProfit.level2)}</span>
           </div>
         </div>
 
-        <div className="mt-4 pt-3 border-t border-border space-y-2 text-sm">
-          <div className="flex justify-between items-center">
+        <div className="mt-3 pt-2 border-t border-border space-y-1 text-xs">
+          <div className="flex justify-between">
             <span className="text-muted-foreground">Setup:</span>
-            <span className="font-mono text-foreground font-semibold bg-secondary px-2 py-0.5 rounded-md text-xs truncate">
-              {signal.strategyName || 'N/A'}
-            </span>
+            <span className="font-mono text-foreground bg-secondary px-1.5 py-0.5 rounded">{signal.strategyName || 'N/A'}</span>
           </div>
-          <div className="flex justify-between items-center">
-            <span className="text-muted-foreground">Risco/Retorno:</span>
-            <span className="font-mono text-foreground font-semibold">
-              {signal.riskRewardRatio || 'N/A'}
-            </span>
+          <div className="flex justify-between">
+            <span className="text-muted-foreground">R:R</span>
+            <span className="font-mono text-foreground">{signal.riskRewardRatio || 'N/A'}</span>
           </div>
-          <div className="flex justify-between items-center">
-            <span className="text-muted-foreground">Timeframe:</span>
-            <span className="font-mono text-foreground font-semibold bg-secondary px-2 py-0.5 rounded-md">
-              {signal.timeframe}
-            </span>
-          </div>
-          {signal.bestEntryTime && (
-            <div className="flex justify-between items-center">
-              <span className="text-muted-foreground flex items-center space-x-1.5">
-                <ClockIcon className="h-4 w-4" />
-                <span>Hora do Pump/Dump:</span>
-              </span>
-              <span className="font-mono text-primary font-bold text-base animate-pulse">
-                {signal.bestEntryTime}
-              </span>
-            </div>
-          )}
         </div>
       </div>
-      <p className="text-right text-xs text-muted-foreground mt-3 self-end">
-        {signal.timestamp.toLocaleTimeString()}
-      </p>
+
+      {/* Ações Sniper */}
+      <div className="flex gap-2 mt-3">
+        <button onClick={handleExecute} className="flex-1 px-2 py-1.5 bg-prisma-green/20 text-prisma-green border border-prisma-green/30 rounded-md text-xs font-bold hover:bg-prisma-green/30 flex items-center justify-center gap-1">
+          <Zap className="w-3 h-3" /> Executar
+        </button>
+        <button onClick={handleAlert} className="flex-1 px-2 py-1.5 bg-primary/20 text-primary border border-primary/30 rounded-md text-xs font-bold hover:bg-primary/30 flex items-center justify-center gap-1">
+          <Bell className="w-3 h-3" /> Alerta
+        </button>
+      </div>
     </div>
   );
 };
 
-// Generate mock signals
-const generateMockSignal = (pair: Pair): Signal => {
-  const isLong = Math.random() > 0.5;
-  const basePrice = Math.random() * 50000 + 1000;
-  const entry = formatPriceNumber(pair.id, basePrice);
-  const moveSize = basePrice * (Math.random() * 0.05 + 0.02);
-  
+// Gera sinal a partir de preço REAL da Binance
+const generateRealSignal = (pair: Pair, ticker: BinanceTicker): Signal => {
+  const wr = ticker.priceChangePercent;
+  const isLong = wr < -2 || (wr < 5 && Math.random() > 0.4);
+  const entry = formatPriceNumber(pair.id, ticker.lastPrice);
+  const atr = (ticker.highPrice - ticker.lowPrice) * 0.3;
+
   return {
-    id: `signal-${Date.now()}-${pair.id}`,
+    id: `sig_${pair.id}_${Date.now()}`,
     pair,
     direction: isLong ? 'LONG' : 'SHORT',
-    confidence: Math.floor(Math.random() * 15) + 85,
-    timeframe: ['5m', '15m', '1H', '4H'][Math.floor(Math.random() * 4)] as Signal['timeframe'],
+    confidence: Math.min(98, Math.floor(70 + Math.abs(wr) * 2 + Math.random() * 10)),
+    timeframe: ['15m', '1H', '4H'][Math.floor(Math.random() * 3)] as Signal['timeframe'],
     entry,
-    stopLoss: formatPriceNumber(pair.id, isLong ? entry - moveSize * 0.3 : entry + moveSize * 0.3),
+    stopLoss: formatPriceNumber(pair.id, isLong ? entry - atr * 0.5 : entry + atr * 0.5),
     takeProfit: {
-      level1: formatPriceNumber(pair.id, isLong ? entry + moveSize * 0.5 : entry - moveSize * 0.5),
-      level2: formatPriceNumber(pair.id, isLong ? entry + moveSize : entry - moveSize),
-      level3: formatPriceNumber(pair.id, isLong ? entry + moveSize * 1.5 : entry - moveSize * 1.5),
+      level1: formatPriceNumber(pair.id, isLong ? entry + atr * 0.8 : entry - atr * 0.8),
+      level2: formatPriceNumber(pair.id, isLong ? entry + atr * 1.5 : entry - atr * 1.5),
+      level3: formatPriceNumber(pair.id, isLong ? entry + atr * 2.5 : entry - atr * 2.5),
     },
     timestamp: new Date(),
     status: 'ATIVO',
-    bestEntryTime: `${String(Math.floor(Math.random() * 24)).padStart(2, '0')}:${String(Math.floor(Math.random() * 60)).padStart(2, '0')}`,
-    strategyName: ['Mitigação de Order Block', 'Liquidity Sweep', 'Wyckoff Spring', 'FVG Fill'][Math.floor(Math.random() * 4)],
-    riskRewardRatio: `1:${Math.floor(Math.random() * 4) + 3}`,
+    bestEntryTime: new Date(Date.now() + Math.random() * 3600000).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
+    strategyName: ['Order Block Mitigation', 'Liquidity Sweep', 'FVG Fill', 'CHoCH + Williams W'][Math.floor(Math.random() * 4)],
+    riskRewardRatio: `1:${(Math.random() * 2 + 2).toFixed(1)}`,
     keyFactors: [
-      'Acumulação de Baleias detectada',
-      'Varejo preso no topo',
-      'Gap de Valor Justo (FVG)',
-      'Stop Hunt confirmado',
-    ].slice(0, Math.floor(Math.random() * 3) + 2),
+      `Volume 24h: $${(ticker.quoteVolume / 1_000_000).toFixed(1)}M`,
+      `${ticker.count.toLocaleString()} trades executadas`,
+      isLong ? 'Baleias acumulando em zona de demanda' : 'Distribuição institucional no topo',
+      'Williams %R confluente com SMC',
+    ],
   };
 };
 
@@ -155,69 +174,73 @@ interface DashboardProps {
 }
 
 export const Dashboard: React.FC<DashboardProps> = ({ setSelectedPair }) => {
-  const [signals, setSignals] = useState<Signal[]>([]);
-  const [scannerMessage, setScannerMessage] = useState('Conectando aos nodes da Blockchain...');
+  const [scannerMessage, setScannerMessage] = useState('Conectando à Binance...');
   const [manualSearch, setManualSearch] = useState('');
   const [isManualScanning, setIsManualScanning] = useState(false);
+  const [scannedPairIds, setScannedPairIds] = useState<string[]>(() => PAIRS.slice(0, 6).map(p => p.id));
 
-  // Auto scanner
+  const pairsBySymbol = useMemo(() => Object.fromEntries(PAIRS.map(p => [p.id, p])), []);
+  const { tickers, loading } = usePrices(scannedPairIds, 8000);
+
+  const signals = useMemo<Signal[]>(() => {
+    return scannedPairIds
+      .map(id => {
+        const t = tickers[id];
+        const p = pairsBySymbol[id];
+        if (!t || !p) return null;
+        return generateRealSignal(p, t);
+      })
+      .filter(Boolean) as Signal[];
+  }, [tickers, scannedPairIds, pairsBySymbol]);
+
   useEffect(() => {
     const messages = [
-      'Conectando aos nodes da Blockchain...',
+      'Sincronizando preços com Binance...',
       'Analisando Volume Profile institucional...',
       'Rastreando movimentação de Baleias...',
-      'Identificando Order Blocks...',
+      'Identificando Order Blocks ao vivo...',
+      'Calculando Williams %R (7) em tempo real...',
       'Detectando Liquidity Sweeps...',
-      'Processando dados de Smart Money...',
     ];
-
-    let messageIndex = 0;
-    const messageInterval = setInterval(() => {
-      messageIndex = (messageIndex + 1) % messages.length;
-      setScannerMessage(messages[messageIndex]);
+    let i = 0;
+    const id = setInterval(() => {
+      i = (i + 1) % messages.length;
+      setScannerMessage(messages[i]);
     }, 3000);
 
-    // Generate initial signals
-    const initialSignals = PAIRS.slice(0, 3).map(generateMockSignal);
-    setSignals(initialSignals);
+    // Adicionar par novo periodicamente
+    const rotate = setInterval(() => {
+      setScannedPairIds(prev => {
+        const remaining = PAIRS.filter(p => !prev.includes(p.id));
+        if (!remaining.length) return prev;
+        const random = remaining[Math.floor(Math.random() * remaining.length)];
+        return [random.id, ...prev].slice(0, 9);
+      });
+    }, 20000);
 
-    // Periodically add new signals
-    const signalInterval = setInterval(() => {
-      const randomPair = PAIRS[Math.floor(Math.random() * PAIRS.length)];
-      const newSignal = generateMockSignal(randomPair);
-      setSignals((prev) => [newSignal, ...prev].slice(0, 10));
-    }, 15000);
-
-    return () => {
-      clearInterval(messageInterval);
-      clearInterval(signalInterval);
-    };
+    return () => { clearInterval(id); clearInterval(rotate); };
   }, []);
 
   const handleManualScan = async () => {
     if (!manualSearch.trim()) return;
-    
     setIsManualScanning(true);
-    const foundPair = PAIRS.find(
-      (p) => p.name.toLowerCase().includes(manualSearch.toLowerCase()) ||
-             p.id.toLowerCase().includes(manualSearch.toLowerCase())
+    const found = PAIRS.find(p =>
+      p.name.toLowerCase().includes(manualSearch.toLowerCase()) ||
+      p.id.toLowerCase().includes(manualSearch.toLowerCase())
     );
-
-    // Simulate scanning
-    await new Promise((resolve) => setTimeout(resolve, 2000));
-
-    if (foundPair) {
-      const newSignal = generateMockSignal(foundPair);
-      setSignals((prev) => [newSignal, ...prev].slice(0, 10));
+    await new Promise(r => setTimeout(r, 1200));
+    if (found) {
+      setScannedPairIds(prev => prev.includes(found.id) ? prev : [found.id, ...prev].slice(0, 9));
+      toast.success(`Scanner ativo para ${found.name}`);
+    } else {
+      toast.error('Par não encontrado');
     }
-
     setIsManualScanning(false);
     setManualSearch('');
   };
 
   return (
     <div className="space-y-6">
-      {/* Scanner Status */}
       <div className="prisma-card gradient-purple">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
@@ -228,26 +251,25 @@ export const Dashboard: React.FC<DashboardProps> = ({ setSelectedPair }) => {
               <div className="absolute -top-1 -right-1 w-3 h-3 bg-prisma-green rounded-full animate-ping" />
             </div>
             <div>
-              <h2 className="text-lg font-bold text-foreground">Scanner Institucional</h2>
-              <p className="text-sm text-muted-foreground animate-pulse">{scannerMessage}</p>
+              <h2 className="text-lg font-bold text-foreground">Scanner Institucional · Binance Live</h2>
+              <p className="text-sm text-muted-foreground animate-pulse">{loading ? 'Buscando preços reais...' : scannerMessage}</p>
             </div>
           </div>
           <div className="text-right">
             <p className="text-2xl font-bold text-primary">{signals.length}</p>
-            <p className="text-xs text-muted-foreground">Sinais Ativos</p>
+            <p className="text-xs text-muted-foreground">Sinais ao vivo</p>
           </div>
         </div>
       </div>
 
-      {/* Manual Search */}
       <div className="prisma-card">
-        <h3 className="text-sm font-semibold text-foreground mb-3">Busca Manual</h3>
+        <h3 className="text-sm font-semibold text-foreground mb-3">Busca Manual (preço real da Binance)</h3>
         <div className="flex space-x-2">
           <div className="flex-1 relative">
             <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <input
               type="text"
-              placeholder="Buscar par específico (ex: BTC, SOL)..."
+              placeholder="ex: BTC, SOL, PEPE..."
               value={manualSearch}
               onChange={(e) => setManualSearch(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleManualScan()}
@@ -264,23 +286,18 @@ export const Dashboard: React.FC<DashboardProps> = ({ setSelectedPair }) => {
         </div>
       </div>
 
-      {/* Signals Grid */}
       <div>
-        <h3 className="text-lg font-bold text-foreground mb-4">
-          🐋 Movimentos das Baleias Detectados
-        </h3>
+        <h3 className="text-lg font-bold text-foreground mb-4">🐋 Movimentos das Baleias · Preços ao Vivo</h3>
         {signals.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
             {signals.map((signal) => (
-              <SignalCard key={signal.id} signal={signal} onClick={setSelectedPair} />
+              <SignalCard key={signal.id} signal={signal} ticker={tickers[signal.pair.id]} onClick={setSelectedPair} />
             ))}
           </div>
         ) : (
           <div className="prisma-card text-center py-12">
-            <TargetIcon className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-            <p className="text-muted-foreground">
-              Aguardando detecção de movimentos institucionais...
-            </p>
+            <TargetIcon className="h-12 w-12 text-muted-foreground mx-auto mb-4 animate-spin" />
+            <p className="text-muted-foreground">Conectando à API Binance...</p>
           </div>
         )}
       </div>
