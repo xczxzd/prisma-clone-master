@@ -1,87 +1,28 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useMemo } from 'react';
 import type { NewsItem } from '@/types';
 import { supabase } from '@/integrations/supabase/client';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Filter } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 
 const generateTodayNews = (): NewsItem[] => {
   const today = new Date();
   const todayStr = today.toLocaleDateString('pt-BR');
-  
+  const minAgo = (m: number) => new Date(Date.now() - 1000 * 60 * m);
+
   return [
-    {
-      id: '1',
-      title: `[${todayStr}] Fed sinaliza manutenção de taxas — mercado reage positivamente`,
-      source: 'Reuters',
-      timestamp: new Date(Date.now() - 1000 * 60 * 15),
-      sentiment: 'Bullish',
-      recommendation: 'Ambiente favorável para ativos de risco. Baleias acumulando BTC e ETH.',
-      affectedAssets: ['BTC', 'ETH', 'SOL'],
-    },
-    {
-      id: '2',
-      title: `[${todayStr}] Dados de emprego dos EUA acima do esperado`,
-      source: 'Bloomberg',
-      timestamp: new Date(Date.now() - 1000 * 60 * 45),
-      sentiment: 'Neutral',
-      recommendation: 'Dados mistos. Possível volatilidade no curto prazo. Aguardar confirmação.',
-      affectedAssets: ['BTC', 'XRP', 'ADA'],
-    },
-    {
-      id: '3',
-      title: `[${todayStr}] Binance registra volume recorde em futuros de BTC`,
-      source: 'CoinDesk',
-      timestamp: new Date(Date.now() - 1000 * 60 * 90),
-      sentiment: 'Bullish',
-      recommendation: 'Volume institucional crescente. Smart Money posicionando-se para alta.',
-      affectedAssets: ['BTC', 'BNB'],
-    },
-    {
-      id: '4',
-      title: `[${todayStr}] SEC abre consulta pública sobre regulação de DeFi`,
-      source: 'The Block',
-      timestamp: new Date(Date.now() - 1000 * 60 * 120),
-      sentiment: 'Bearish',
-      recommendation: 'Incerteza regulatória. Tokens DeFi podem sofrer pressão de venda.',
-      affectedAssets: ['UNI', 'AAVE', 'LINK', 'CRV'],
-    },
-    {
-      id: '5',
-      title: `[${todayStr}] BlackRock aumenta posição em ETF de Ethereum`,
-      source: 'Bloomberg',
-      timestamp: new Date(Date.now() - 1000 * 60 * 180),
-      sentiment: 'Bullish',
-      recommendation: 'Sinal forte de acumulação institucional. ETH pode liderar próximo rally.',
-      affectedAssets: ['ETH', 'OP', 'ARB'],
-    },
-    {
-      id: '6',
-      title: `[${todayStr}] Relatório on-chain: Baleias movem 50K BTC para cold storage`,
-      source: 'Glassnode',
-      timestamp: new Date(Date.now() - 1000 * 60 * 240),
-      sentiment: 'Bullish',
-      recommendation: 'Retirda massiva de exchanges = redução de pressão vendedora. Muito bullish.',
-      affectedAssets: ['BTC'],
-    },
-    {
-      id: '7',
-      title: `[${todayStr}] Solana ultrapassa Ethereum em transações diárias`,
-      source: 'Messari',
-      timestamp: new Date(Date.now() - 1000 * 60 * 300),
-      sentiment: 'Bullish',
-      recommendation: 'Crescimento de atividade on-chain. SOL e ecossistema podem valorizar.',
-      affectedAssets: ['SOL', 'JUP', 'BONK', 'WIF'],
-    },
-    {
-      id: '8',
-      title: `[${todayStr}] Tokens de IA em alta após parceria Nvidia + crypto`,
-      source: 'CoinTelegraph',
-      timestamp: new Date(Date.now() - 1000 * 60 * 360),
-      sentiment: 'Bullish',
-      recommendation: 'Narrativa de IA ganhando força. FET, RNDR e TAO com potencial de upside.',
-      affectedAssets: ['FET', 'RNDR', 'TAO', 'WLD'],
-    },
+    { id: '1', title: `[${todayStr}] Fed sinaliza manutenção de taxas — mercado reage positivamente`, source: 'Reuters', timestamp: minAgo(15), sentiment: 'Bullish', recommendation: 'Ambiente favorável para ativos de risco. Baleias acumulando BTC e ETH.', affectedAssets: ['BTC', 'ETH', 'SOL'] },
+    { id: '2', title: `[${todayStr}] Dados de emprego dos EUA acima do esperado`, source: 'Bloomberg', timestamp: minAgo(35), sentiment: 'Neutral', recommendation: 'Dados mistos. Volatilidade no curto prazo.', affectedAssets: ['BTC', 'XRP', 'ADA'] },
+    { id: '3', title: `[${todayStr}] Binance registra volume recorde em futuros de BTC`, source: 'CoinDesk', timestamp: minAgo(55), sentiment: 'Bullish', recommendation: 'Volume institucional crescente. Smart Money posicionando para alta.', affectedAssets: ['BTC', 'BNB'] },
+    { id: '4', title: `[${todayStr}] SEC abre consulta pública sobre regulação de DeFi`, source: 'The Block', timestamp: minAgo(80), sentiment: 'Bearish', recommendation: 'Incerteza regulatória. Tokens DeFi sob pressão.', affectedAssets: ['UNI', 'AAVE', 'LINK', 'CRV'] },
+    { id: '5', title: `[${todayStr}] BlackRock aumenta posição em ETF de Ethereum`, source: 'Bloomberg', timestamp: minAgo(105), sentiment: 'Bullish', recommendation: 'Acumulação institucional. ETH pode liderar rally.', affectedAssets: ['ETH', 'OP', 'ARB'] },
+    { id: '6', title: `[${todayStr}] On-chain: Baleias movem 50K BTC para cold storage`, source: 'Glassnode', timestamp: minAgo(140), sentiment: 'Bullish', recommendation: 'Retirada massiva = menos pressão vendedora. Muito bullish.', affectedAssets: ['BTC'] },
+    { id: '7', title: `[${todayStr}] Solana ultrapassa Ethereum em transações diárias`, source: 'Messari', timestamp: minAgo(170), sentiment: 'Bullish', recommendation: 'Crescimento on-chain. SOL e ecossistema valorizando.', affectedAssets: ['SOL', 'JUP', 'BONK', 'WIF'] },
+    { id: '8', title: `[${todayStr}] Tokens de IA em alta após parceria Nvidia + crypto`, source: 'CoinTelegraph', timestamp: minAgo(210), sentiment: 'Bullish', recommendation: 'Narrativa IA forte. FET/RNDR/TAO com upside.', affectedAssets: ['FET', 'RNDR', 'TAO', 'WLD'] },
+    { id: '9', title: `[${todayStr}] CPI dos EUA divulgado hoje às 09:30 (horário Brasília)`, source: 'Investing', timestamp: minAgo(20), sentiment: 'Neutral', recommendation: '⚠️ EVENTO DE ALTO IMPACTO - Evitar entradas 30min antes/depois.', affectedAssets: ['BTC', 'ETH'] },
+    { id: '10', title: `[${todayStr}] Whale alert: 12.500 BTC movidos de Coinbase para wallet desconhecida`, source: 'Whale Alert', timestamp: minAgo(8), sentiment: 'Bullish', recommendation: 'Saída de exchange = acumulação institucional silenciosa.', affectedAssets: ['BTC'] },
+    { id: '11', title: `[${todayStr}] Funding rate de BTC perpétuo virou negativo nas últimas 4h`, source: 'Coinglass', timestamp: minAgo(45), sentiment: 'Bullish', recommendation: 'Excesso de short = squeeze provável. Long bias.', affectedAssets: ['BTC', 'ETH'] },
+    { id: '12', title: `[${todayStr}] Open Interest em ETH atinge máxima histórica`, source: 'Coinglass', timestamp: minAgo(95), sentiment: 'Neutral', recommendation: 'Alavancagem alta = volatilidade extrema esperada.', affectedAssets: ['ETH'] },
   ];
 };
 
