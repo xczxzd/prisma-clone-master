@@ -223,10 +223,17 @@ export const AnalysisModal: React.FC<AnalysisModalProps> = ({ pair, isOpen, onCl
 
               {/* Execute Signal Button */}
               <div className="mt-4 flex gap-3">
-                <Button className="flex-1 bg-prisma-green/20 text-prisma-green hover:bg-prisma-green/30 border border-prisma-green/30">
+                <Button onClick={handleExecuteSignal} className="flex-1 bg-prisma-green/20 text-prisma-green hover:bg-prisma-green/30 border border-prisma-green/30">
                   ✅ Executar Sinal no Preço Atual
                 </Button>
-                <Button variant="outline" className="border-border">
+                <Button
+                  variant="outline"
+                  className="border-border"
+                  onClick={() => {
+                    navigator.clipboard.writeText(`${pair.name} ${signalData.direction}\nEntry: $${signalData.entry}\nSL: $${signalData.sl}\nTP1: $${signalData.tp1}\nTP2: $${signalData.tp2}\nTP3: $${signalData.tp3}`);
+                    toast.success('Sinal copiado!');
+                  }}
+                >
                   📋 Copiar Sinal
                 </Button>
               </div>
