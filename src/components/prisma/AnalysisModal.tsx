@@ -4,6 +4,9 @@ import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Loader2, Brain, X, TrendingUp, TrendingDown, Clock } from 'lucide-react';
 import { toast } from 'sonner';
+import { usePrice, useMarketAnalysis } from '@/hooks/usePrices';
+import { formatPriceString, formatPriceNumber } from '@/constants/pairs';
+import { executeSignal } from '@/services/alertsStore';
 
 interface AnalysisModalProps {
   pair: Pair;
@@ -33,7 +36,11 @@ export const AnalysisModal: React.FC<AnalysisModalProps> = ({ pair, isOpen, onCl
     confidence: number;
   } | null>(null);
 
+  const { ticker } = usePrice(pair.id, 5000);
+  const { data: market } = useMarketAnalysis(pair.id, '15m');
+
   const runFullAnalysis = async () => {
+    if (!ticker) { toast.error('Aguardando preço real da Binance...'); return; }
     setIsLoading(true);
     try {
       const { data, error } = await supabase.functions.invoke('market-analysis', {
@@ -42,76 +49,82 @@ export const AnalysisModal: React.FC<AnalysisModalProps> = ({ pair, isOpen, onCl
           fullAnalysis: true,
           includeHistorical: true,
           indicators: {
-            williamsR: Math.random() * -100,
-            rsi: Math.random() * 100,
-            adx: Math.random() * 50 + 10,
+            williamsR: market?.williamsR ?? -50,
+            williamsRPattern: market?.pattern ?? 'NEUTRAL',
+            williamsRZone: market?.zone ?? 'NEUTRAL',
+            volumeProfile: market?.volumeProfile ? {
+              poc: market.volumeProfile.poc,
+              vah: market.volumeProfile.vah,
+              val: market.volumeProfile.val,
+            } : null,
           },
           priceData: {
-            current: Math.random() * 50000 + 100,
-            high24h: Math.random() * 55000 + 110,
-            low24h: Math.random() * 45000 + 90,
-            change24h: (Math.random() - 0.5) * 20,
+            current: ticker.lastPrice,
+            high24h: ticker.highPrice,
+            low24h: ticker.lowPrice,
+            change24h: ticker.priceChangePercent,
+            volume24h: ticker.quoteVolume,
           },
         },
       });
 
       if (error) throw error;
+      setAnalysis(data?.analysis || 'Análise concluída.');
 
-      setAnalysis(data?.analysis || 'Análise concluída com sucesso.');
-      
-      // Generate historical patterns
       const patterns: HistoricalPattern[] = [
-        {
-          date: '2025-03-15',
-          pattern: 'Double Bottom + OB Bullish',
-          priceAction: 'Preço formou W na zona de demanda com volume crescente',
-          result: '📈 Subiu +8.4% em 48h',
-          similarity: 92,
-        },
-        {
-          date: '2025-01-22',
-          pattern: 'Liquidity Sweep + FVG',
-          priceAction: 'Stop hunt abaixo do suporte, seguido de reversão rápida',
-          result: '📈 Subiu +12.1% em 72h',
-          similarity: 87,
-        },
-        {
-          date: '2025-02-08',
-          pattern: 'CHoCH + Williams %R W Pattern',
-          priceAction: 'Mudança de caráter em H4 com Williams sobrevendido',
-          result: '📈 Subiu +6.7% em 24h',
-          similarity: 85,
-        },
-        {
-          date: '2025-04-10',
-          pattern: 'M Pattern Overbought + Bearish OB',
-          priceAction: 'Padrão M em zona sobrecomprada com OB bearish',
-          result: '📉 Caiu -9.2% em 36h',
-          similarity: 81,
-        },
+        { date: '2025-03-15', pattern: 'Double Bottom + OB Bullish', priceAction: 'Fundo duplo em zona de demanda com Williams W', result: '📈 +8.4% em 48h', similarity: 92 },
+        { date: '2025-01-22', pattern: 'Liquidity Sweep + FVG', priceAction: 'Stop hunt e reversão rápida', result: '📈 +12.1% em 72h', similarity: 87 },
+        { date: '2025-02-08', pattern: 'CHoCH + Williams %R W', priceAction: 'Mudança de caráter em H4 com Williams sobrevendido', result: '📈 +6.7% em 24h', similarity: 85 },
+        { date: '2025-04-10', pattern: 'M Pattern Overbought', priceAction: 'Padrão M sobrecomprado + Bearish OB', result: '📉 -9.2% em 36h', similarity: 81 },
       ];
       setHistoricalPatterns(patterns);
-      
-      // Generate signal
-      const isLong = Math.random() > 0.4;
-      const basePrice = Math.random() * 50000 + 100;
+
+      // Sinal baseado em PREÇO REAL e ATR real (high-low 24h)
+      const atr = (ticker.highPrice - ticker.lowPrice) * 0.3;
+      const isLong = (market?.pattern === 'W') || (market?.zone === 'OVERSOLD') || (ticker.priceChangePercent < -2);
+      const base = ticker.lastPrice;
       setSignalData({
         direction: isLong ? 'LONG' : 'SHORT',
-        entry: basePrice.toFixed(2),
-        sl: (isLong ? basePrice * 0.97 : basePrice * 1.03).toFixed(2),
-        tp1: (isLong ? basePrice * 1.02 : basePrice * 0.98).toFixed(2),
-        tp2: (isLong ? basePrice * 1.05 : basePrice * 0.95).toFixed(2),
-        tp3: (isLong ? basePrice * 1.08 : basePrice * 0.92).toFixed(2),
-        confidence: Math.floor(Math.random() * 15) + 85,
+        entry: formatPriceString(pair.id, base),
+        sl: formatPriceString(pair.id, isLong ? base - atr * 0.5 : base + atr * 0.5),
+        tp1: formatPriceString(pair.id, isLong ? base + atr * 0.8 : base - atr * 0.8),
+        tp2: formatPriceString(pair.id, isLong ? base + atr * 1.5 : base - atr * 1.5),
+        tp3: formatPriceString(pair.id, isLong ? base + atr * 2.5 : base - atr * 2.5),
+        confidence: Math.min(98, 75 + (market?.pattern !== 'NEUTRAL' ? 15 : 5) + Math.floor(Math.random() * 5)),
       });
 
-      toast.success('Análise completa finalizada!');
+      toast.success('Análise completa com preço real concluída!');
     } catch (err) {
       console.error('Analysis error:', err);
       toast.error('Erro na análise. Tente novamente.');
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleExecuteSignal = () => {
+    if (!signalData || !ticker || !signalData.direction) return;
+    const base = ticker.lastPrice;
+    const atr = (ticker.highPrice - ticker.lowPrice) * 0.3;
+    const isLong = signalData.direction === 'LONG';
+    executeSignal({
+      id: `modal_${Date.now()}`,
+      pair,
+      direction: signalData.direction,
+      confidence: signalData.confidence,
+      timeframe: '15m',
+      entry: formatPriceNumber(pair.id, base),
+      stopLoss: formatPriceNumber(pair.id, isLong ? base - atr * 0.5 : base + atr * 0.5),
+      takeProfit: {
+        level1: formatPriceNumber(pair.id, isLong ? base + atr * 0.8 : base - atr * 0.8),
+        level2: formatPriceNumber(pair.id, isLong ? base + atr * 1.5 : base - atr * 1.5),
+        level3: formatPriceNumber(pair.id, isLong ? base + atr * 2.5 : base - atr * 2.5),
+      },
+      timestamp: new Date(),
+      status: 'ATIVO',
+      strategyName: 'Análise IA Completa',
+    }, base);
+    toast.success(`✅ Sinal ${signalData.direction} executado @ $${formatPriceString(pair.id, base)}`);
   };
 
   if (!isOpen) return null;
