@@ -2,9 +2,11 @@ import React, { useMemo, useState } from 'react';
 import type { Pair, IndicatorStatus, WilliamsRData, AIAnalysisResult } from '@/types';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
-import { Loader2, Brain, TrendingUp, TrendingDown, AlertTriangle } from 'lucide-react';
+import { Loader2, Brain, TrendingUp, TrendingDown, AlertTriangle, Activity } from 'lucide-react';
 import { toast } from 'sonner';
 import { TradingViewChart } from './TradingViewChart';
+import { useMarketAnalysis, usePrice } from '@/hooks/usePrices';
+import { formatPriceString } from '@/constants/pairs';
 
 const getStatusColor = (status: IndicatorStatus['status']) => {
   switch (status) {
@@ -113,38 +115,28 @@ export const TechnicalAnalysis: React.FC<TechnicalAnalysisProps> = ({ pair, onAn
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [aiAnalysis, setAiAnalysis] = useState<AIAnalysisResult | null>(null);
 
+  // Dados reais Binance
+  const { ticker } = usePrice(pair.id, 5000);
+  const { data: market } = useMarketAnalysis(pair.id, '15m');
+
   const createSeededRandom = (seed: number) => {
     let state = seed;
-    return () => {
-      state = (state * 9301 + 49297) % 233280;
-      return state / 233280;
-    };
+    return () => { state = (state * 9301 + 49297) % 233280; return state / 233280; };
   };
-
   const seed = pair.id.split('').reduce((a, b) => a + b.charCodeAt(0), 0);
   const random = createSeededRandom(seed);
 
   const williamsRData: WilliamsRData = useMemo(() => {
-    const value = (random() * 100 - 100);
-    let zone: WilliamsRData['zone'] = 'NEUTRAL';
-    let pattern: WilliamsRData['pattern'] = 'NEUTRAL';
-    
-    if (value < -80) {
-      zone = 'OVERSOLD';
-      pattern = random() > 0.6 ? 'W' : 'NEUTRAL';
-    } else if (value > -20) {
-      zone = 'OVERBOUGHT';
-      pattern = random() > 0.6 ? 'M' : 'NEUTRAL';
-    }
-
+    const value = market?.williamsR ?? -50;
+    const zone = market?.zone ?? 'NEUTRAL';
+    const pattern = market?.pattern ?? 'NEUTRAL';
     let signal: WilliamsRData['signal'] = 'NEUTRAL';
     if (zone === 'OVERSOLD' && pattern === 'W') signal = 'STRONG_BUY';
     else if (zone === 'OVERBOUGHT' && pattern === 'M') signal = 'STRONG_SELL';
     else if (zone === 'OVERSOLD') signal = 'BUY';
     else if (zone === 'OVERBOUGHT') signal = 'SELL';
-
     return { value, zone, pattern, signal };
-  }, [pair.id]);
+  }, [market]);
 
   const indicatorValues = useMemo(() => ({
     rsi: random() * 100,
@@ -214,22 +206,27 @@ export const TechnicalAnalysis: React.FC<TechnicalAnalysisProps> = ({ pair, onAn
             williamsRPattern: williamsRData.pattern,
             williamsRZone: williamsRData.zone,
             ...indicatorValues,
+            volumeProfile: market?.volumeProfile ? {
+              poc: market.volumeProfile.poc,
+              vah: market.volumeProfile.vah,
+              val: market.volumeProfile.val,
+            } : null,
           },
           priceData: {
-            current: random() * 1000 + 100,
-            high24h: random() * 1100 + 110,
-            low24h: random() * 900 + 90,
-            change24h: (random() - 0.5) * 20,
+            current: ticker?.lastPrice ?? 0,
+            high24h: ticker?.highPrice ?? 0,
+            low24h: ticker?.lowPrice ?? 0,
+            change24h: ticker?.priceChangePercent ?? 0,
+            volume24h: ticker?.quoteVolume ?? 0,
           },
         },
       });
-
       if (error) throw error;
       setAiAnalysis(data);
       toast.success('Análise IA concluída!');
     } catch (err) {
       console.error('AI Analysis error:', err);
-      toast.error('Erro na análise IA. Tente novamente.');
+      toast.error('Erro na análise IA.');
     } finally {
       setIsAnalyzing(false);
     }
