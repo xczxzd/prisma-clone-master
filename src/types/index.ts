@@ -37,7 +37,8 @@ export type View =
   | 'TelegramSettings' 
   | 'SignalHistory' 
   | 'StrategyV3' 
-  | 'RiskManagement';
+  | 'RiskManagement'
+  | 'Alerts';
 
 export interface IndicatorStatus {
   name: string;
