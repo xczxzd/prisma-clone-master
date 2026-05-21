@@ -14,7 +14,174 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      telegram_alerts: {
+        Row: {
+          condition: string
+          created_at: string
+          device_id: string
+          enabled: boolean
+          id: string
+          note: string | null
+          symbol: string
+          target_price: number
+          triggered: boolean
+          triggered_at: string | null
+        }
+        Insert: {
+          condition: string
+          created_at?: string
+          device_id?: string
+          enabled?: boolean
+          id?: string
+          note?: string | null
+          symbol: string
+          target_price: number
+          triggered?: boolean
+          triggered_at?: string | null
+        }
+        Update: {
+          condition?: string
+          created_at?: string
+          device_id?: string
+          enabled?: boolean
+          id?: string
+          note?: string | null
+          symbol?: string
+          target_price?: number
+          triggered?: boolean
+          triggered_at?: string | null
+        }
+        Relationships: []
+      }
+      telegram_config: {
+        Row: {
+          auto_mode: boolean
+          bot_token: string | null
+          chat_id: string | null
+          created_at: string
+          device_id: string
+          id: string
+          notify_news: boolean
+          notify_prices: boolean
+          notify_signals: boolean
+          notify_whales: boolean
+          scan_interval_sec: number
+          updated_at: string
+          watched_pairs: string[]
+        }
+        Insert: {
+          auto_mode?: boolean
+          bot_token?: string | null
+          chat_id?: string | null
+          created_at?: string
+          device_id?: string
+          id?: string
+          notify_news?: boolean
+          notify_prices?: boolean
+          notify_signals?: boolean
+          notify_whales?: boolean
+          scan_interval_sec?: number
+          updated_at?: string
+          watched_pairs?: string[]
+        }
+        Update: {
+          auto_mode?: boolean
+          bot_token?: string | null
+          chat_id?: string | null
+          created_at?: string
+          device_id?: string
+          id?: string
+          notify_news?: boolean
+          notify_prices?: boolean
+          notify_signals?: boolean
+          notify_whales?: boolean
+          scan_interval_sec?: number
+          updated_at?: string
+          watched_pairs?: string[]
+        }
+        Relationships: []
+      }
+      telegram_logs: {
+        Row: {
+          created_at: string
+          device_id: string
+          id: string
+          message: string | null
+          payload: Json | null
+          status: string
+          type: string
+        }
+        Insert: {
+          created_at?: string
+          device_id?: string
+          id?: string
+          message?: string | null
+          payload?: Json | null
+          status?: string
+          type: string
+        }
+        Update: {
+          created_at?: string
+          device_id?: string
+          id?: string
+          message?: string | null
+          payload?: Json | null
+          status?: string
+          type?: string
+        }
+        Relationships: []
+      }
+      telegram_signals: {
+        Row: {
+          confidence: number
+          created_at: string
+          device_id: string
+          direction: string
+          entry: number
+          id: string
+          pair: string
+          sent_telegram: boolean
+          status: string
+          stop_loss: number
+          strategy: string | null
+          tp1: number
+          tp2: number
+          tp3: number
+        }
+        Insert: {
+          confidence: number
+          created_at?: string
+          device_id?: string
+          direction: string
+          entry: number
+          id?: string
+          pair: string
+          sent_telegram?: boolean
+          status?: string
+          stop_loss: number
+          strategy?: string | null
+          tp1: number
+          tp2: number
+          tp3: number
+        }
+        Update: {
+          confidence?: number
+          created_at?: string
+          device_id?: string
+          direction?: string
+          entry?: number
+          id?: string
+          pair?: string
+          sent_telegram?: boolean
+          status?: string
+          stop_loss?: number
+          strategy?: string | null
+          tp1?: number
+          tp2?: number
+          tp3?: number
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
