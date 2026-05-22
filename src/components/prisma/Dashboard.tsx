@@ -260,7 +260,11 @@ export const Dashboard: React.FC<DashboardProps> = ({ setSelectedPair }) => {
             <p className="text-2xl font-bold text-primary">{signals.length}</p>
             <p className="text-xs text-muted-foreground">Sinais ao vivo</p>
           </div>
-        </div>
+      </div>
+
+      {scannedPairIds[0] && pairsBySymbol[scannedPairIds[0]] && (
+        <InstitutionalPanel pair={pairsBySymbol[scannedPairIds[0]]} />
+      )}
       </div>
 
       <div className="prisma-card">
