@@ -14,6 +14,66 @@ export type Database = {
   }
   public: {
     Tables: {
+      signal_dedup: {
+        Row: {
+          created_at: string
+          device_id: string
+          direction: string
+          id: string
+          payload: Json | null
+          score: number
+          symbol: string
+          timeframe: string
+        }
+        Insert: {
+          created_at?: string
+          device_id?: string
+          direction: string
+          id?: string
+          payload?: Json | null
+          score: number
+          symbol: string
+          timeframe?: string
+        }
+        Update: {
+          created_at?: string
+          device_id?: string
+          direction?: string
+          id?: string
+          payload?: Json | null
+          score?: number
+          symbol?: string
+          timeframe?: string
+        }
+        Relationships: []
+      }
+      system_logs: {
+        Row: {
+          context: Json | null
+          created_at: string
+          id: string
+          level: string
+          message: string
+          source: string
+        }
+        Insert: {
+          context?: Json | null
+          created_at?: string
+          id?: string
+          level?: string
+          message: string
+          source: string
+        }
+        Update: {
+          context?: Json | null
+          created_at?: string
+          id?: string
+          level?: string
+          message?: string
+          source?: string
+        }
+        Relationships: []
+      }
       telegram_alerts: {
         Row: {
           condition: string
