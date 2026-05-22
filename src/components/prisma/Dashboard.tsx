@@ -7,6 +7,7 @@ import { executeSignal, addAlert } from '@/services/alertsStore';
 import { toast } from 'sonner';
 import { Bell, Zap } from 'lucide-react';
 import type { BinanceTicker } from '@/services/binanceApi';
+import { InstitutionalPanel } from './InstitutionalPanel';
 
 interface SignalCardProps {
   signal: Signal;
