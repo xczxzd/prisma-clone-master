@@ -8,6 +8,7 @@ import { toast } from 'sonner';
 import { Bell, Zap } from 'lucide-react';
 import type { BinanceTicker } from '@/services/binanceApi';
 import { InstitutionalPanel } from './InstitutionalPanel';
+import { OrderflowPanel } from './OrderflowPanel';
 
 interface SignalCardProps {
   signal: Signal;
@@ -265,6 +266,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ setSelectedPair }) => {
       {scannedPairIds[0] && pairsBySymbol[scannedPairIds[0]] && (
         <InstitutionalPanel pair={pairsBySymbol[scannedPairIds[0]]} />
       )}
+
+      <OrderflowPanel />
       </div>
 
       <div className="prisma-card">
